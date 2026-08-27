@@ -1,0 +1,58 @@
+{
+  "_median_makuri_rate": 3.9,
+  "1": {
+    "course_win_rate": 55.7,
+    "vs_high_makuri_neighbor": {
+      "win_rate": 55.1,
+      "n": 22923
+    },
+    "vs_low_makuri_neighbor": {
+      "win_rate": 56.5,
+      "n": 17999
+    }
+  },
+  "2": {
+    "course_win_rate": 13.0,
+    "vs_high_makuri_neighbor": {
+      "win_rate": 12.0,
+      "n": 23019
+    },
+    "vs_low_makuri_neighbor": {
+      "win_rate": 14.3,
+      "n": 17903
+    }
+  },
+  "3": {
+    "course_win_rate": 12.8,
+    "vs_high_makuri_neighbor": {
+      "win_rate": 11.8,
+      "n": 22655
+    },
+    "vs_low_makuri_neighbor": {
+      "win_rate": 14.1,
+      "n": 18267
+    }
+  },
+  "4": {
+    "course_win_rate": 10.5,
+    "vs_high_makuri_neighbor": {
+      "win_rate": 10.1,
+      "n": 22070
+    },
+    "vs_low_makuri_neighbor": {
+      "win_rate": 11.1,
+      "n": 18852
+    }
+  },
+  "5": {
+    "course_win_rate": 6.1,
+    "vs_high_makuri_neighbor": {
+      "win_rate": 5.8,
+      "n": 19314
+    },
+    "vs_low_makuri_neighbor": {
+      "win_rate": 6.4,
+      "n": 21608
+    }
+  }
+}

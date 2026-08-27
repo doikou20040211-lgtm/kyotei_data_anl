@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>潮読み | 競艇データラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-page:#081722;
+    --bg-card:#0F2836;
+    --bg-card-2:#123044;
+    --border:rgba(255,255,255,0.08);
+    --border-strong:rgba(255,255,255,0.16);
+    --text-primary:#EAF2F6;
+    --text-secondary:#93ADBB;
+    --text-muted:#5C7683;
+    --accent:#2FD1C0;
+    --accent-dim:#1A6E66;
+    --good:#2FD1C0; --good-text:#08201C;
+    --bad:#E8564F; --bad-text:#3A0E0C;
+    --b1:#F2EFE6; --b1-text:#2C2A22;
+    --b2:#2A2A2A; --b2-text:#F2EFE6;
+    --b3:#E8433D; --b3-text:#3A0E0C;
+    --b4:#2E76E5; --b4-text:#0B1F42;
+    --b5:#EFC419; --b5-text:#3A2E02;
+    --b6:#2FA84F; --b6-text:#082A13;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg-page);color:var(--text-primary);font-family:'Noto Sans JP',sans-serif;line-height:1.7;padding-bottom:4rem;}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px;}
+
+  header{padding:56px 20px 0;position:relative;overflow:hidden;}
+  .eyebrow{font-family:'JetBrains Mono',monospace;font-size:13px;letter-spacing:0.12em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;}
+  h1{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;font-size:clamp(34px,7vw,52px);letter-spacing:-0.01em;margin-bottom:14px;}
+  header p.lead{color:var(--text-secondary);font-size:16px;max-width:540px;}
+  .wave{width:100%;height:64px;display:block;margin-top:36px;}
+
+  nav.tabs{
+    position:sticky;top:0;z-index:10;
+    background:rgba(8,23,34,0.92);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--border);
+    margin-top:32px;
+  }
+  .tabs-inner{display:flex;gap:4px;overflow-x:auto;padding:0 20px;scrollbar-width:none;max-width:900px;margin:0 auto;}
+  .tabs-inner::-webkit-scrollbar{display:none;}
+  .tab-btn{
+    flex:0 0 auto;font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:14px;
+    padding:16px 14px;color:var(--text-muted);cursor:pointer;white-space:nowrap;
+    border-bottom:2px solid transparent;transition:all .15s ease;
+  }
+  .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+  .tab-btn:not(.active):hover{color:var(--text-secondary);}
+
+  .page{display:none;padding:40px 20px 0;}
+  .page.active{display:block;}
+  .section-head{margin-bottom:20px;}
+  .section-head .eyebrow{margin-bottom:8px;}
+  h2{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:22px;}
+  .section-head p{color:var(--text-secondary);font-size:14px;margin-top:6px;}
+
+  .venue-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+  .venue-row::-webkit-scrollbar{display:none;}
+  .venue-pill{
+    flex:0 0 auto;font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:14px;
+    padding:10px 18px;border-radius:999px;border:1px solid var(--border);background:var(--bg-card);
+    color:var(--text-secondary);cursor:pointer;white-space:nowrap;transition:all .15s ease;
+  }
+  .venue-pill.active{background:var(--accent);color:#06231F;border-color:var(--accent);}
+  .venue-pill:not(.active):hover{border-color:var(--border-strong);color:var(--text-primary);}
+
+  .card{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:24px;margin-top:20px;}
+  .card-top{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:22px;}
+  .venue-name{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:900;font-size:26px;}
+  .venue-meta{color:var(--text-muted);font-size:13px;font-family:'JetBrains Mono',monospace;margin-top:4px;}
+  .avg-box{text-align:right;}
+  .avg-label{font-size:12px;color:var(--text-muted);}
+  .avg-value{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:28px;color:var(--accent);}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  table.datatable th, table.datatable td{text-align:center;padding:10px 4px;}
+  table.datatable th{color:var(--text-muted);font-weight:500;font-size:12px;border-bottom:1px solid var(--border);}
+  table.datatable th:first-child, table.datatable td:first-child{text-align:left;color:var(--text-secondary);font-weight:700;padding-left:4px;}
+  .cell{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;border-radius:8px;padding:8px 4px;}
+  .cell .n{display:block;font-size:10px;font-weight:400;opacity:.75;margin-top:2px;font-family:'Noto Sans JP',sans-serif;}
+  .cell.na{color:var(--text-muted);background:transparent;font-weight:400;}
+
+  .legend{display:flex;gap:18px;margin-top:18px;flex-wrap:wrap;}
+  .legend-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-secondary);}
+  .swatch{width:14px;height:14px;border-radius:4px;flex:0 0 auto;}
+
+  .placeholder{text-align:center;padding:40px 20px;color:var(--text-muted);}
+  .placeholder .big{font-size:15px;color:var(--text-secondary);margin-bottom:6px;}
+
+  .boats{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;}
+  .boat{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;border:1px solid var(--border);}
+
+  .race-date-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;}
+  .race-date-row::-webkit-scrollbar{display:none;}
+  .race-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:16px;}
+  .race-item{
+    background:var(--bg-card-2);border:1px solid var(--border);border-radius:12px;
+    padding:12px;cursor:pointer;transition:all .15s ease;
+  }
+  .race-item:hover{border-color:var(--border-strong);}
+  .race-item.active{border-color:var(--accent);background:rgba(47,209,192,0.08);}
+  .race-item .rv{font-family:'Zen Kaku Gothic New',sans-serif;font-weight:700;font-size:14px;}
+  .race-item .rr{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);margin-top:2px;}
+  .rank-badge{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;
+    padding:2px 8px;border-radius:6px;margin-top:6px;
+  }
+  .rank-SS,.rank-S{background:var(--bad);color:var(--bad-text);}
+  .rank-A{background:var(--good);color:var(--good-text);}
+  .rank-B{background:var(--b5);color:var(--b5-text);}
+  .rank-C{background:var(--bg-card);color:var(--text-secondary);}
+
+  .race-detail{margin-top:20px;}
+  .axis-row{display:flex;align-items:center;gap:16px;margin-bottom:20px;}
+  .axis-boat-circle{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;flex:0 0 auto;}
+  .axis-prob{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:32px;color:var(--accent);}
+  .axis-label{font-size:12px;color:var(--text-muted);}
+
+  .shap-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+  .shap-row:last-child{border-bottom:none;}
+  .shap-bar-bg{flex:1;height:8px;background:var(--bg-card);border-radius:4px;overflow:hidden;}
+  .shap-bar{height:100%;background:var(--accent);border-radius:4px;}
+  .shap-label{font-size:13px;color:var(--text-secondary);width:180px;flex:0 0 auto;}
+  .shap-val{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);width:56px;text-align:right;flex:0 0 auto;}
+
+  .entry-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px;}
+  .entry-table th{text-align:left;color:var(--text-muted);font-weight:500;font-size:11px;padding:6px 8px;border-bottom:1px solid var(--border);}
+  .entry-table td{padding:10px 8px;border-bottom:1px solid var(--border);}
+  .entry-table tr:last-child td{border-bottom:none;}
+  .entry-table tr.is-axis{background:rgba(47,209,192,0.06);}
+  .entry-boat{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;}
+  .entry-name{font-weight:700;font-size:13px;}
+  .entry-name .axis-tag{font-size:10px;color:var(--accent);font-weight:400;margin-left:4px;}
+  .entry-num{font-family:'JetBrains Mono',monospace;text-align:right;}
+
+  .vcourse-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px;}
+  .vcourse-cell{background:var(--bg-card-2);border-radius:10px;padding:10px 4px;text-align:center;}
+  .vcourse-cell.is-axis{outline:1.5px solid var(--accent);}
+  .vcourse-cell .num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;margin:0 auto 6px;}
+  .vcourse-cell .win1{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--text-primary);}
+  .vcourse-cell .win1-label{font-size:9px;color:var(--text-muted);margin-top:2px;}
+  .vcourse-cell .sub{font-size:9px;color:var(--text-muted);margin-top:6px;line-height:1.5;}
+  .vcourse-note{font-size:12px;color:var(--text-muted);margin-top:10px;}
+
+  .combo-list{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .combo-chip{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:13px;background:var(--bg-card-2);padding:6px 12px;border-radius:8px;}
+
+  .weather-row{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;}
+  .weather-item{font-size:13px;color:var(--text-secondary);}
+  .weather-item b{color:var(--text-primary);font-family:'JetBrains Mono',monospace;}
+
+  .course-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px;}
+  .course-cell{background:var(--bg-card-2);border-radius:10px;padding:12px 6px;text-align:center;}
+  .course-cell .num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;margin:0 auto 8px;}
+  .course-cell .stat-label{font-size:10px;color:var(--text-muted);margin-top:6px;}
+  .course-cell .stat-val{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:var(--text-primary);}
+
+  .kimarite-bar{display:flex;height:22px;border-radius:6px;overflow:hidden;margin-top:8px;}
+
+  .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:20px;}
+  .stat-card{background:var(--bg-card-2);border-radius:12px;padding:16px;}
+  .stat-card .label{font-size:12px;color:var(--text-muted);}
+  .stat-card .value{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;margin-top:4px;color:var(--text-primary);}
+  .stat-card .value.up{color:var(--good);}
+
+  footer{padding:56px 20px 0;color:var(--text-muted);font-size:13px;}
+  footer .card{background:transparent;border-style:dashed;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Kyotei data lab / 競艇データラボ</div>
+    <h1>水面を読めば、<br>予想が変わる。</h1>
+    <p class="lead">競艇の予想に使えるデータを、集計してそのまま公開しています。潮・コース別成績・決まり手・出走選手のデータなど、自分で予想を組み立てるための材料をまとめました。</p>
+  </div>
+  <svg class="wave" viewBox="0 0 900 64" preserveAspectRatio="none">
+    <path id="wavePath" d="M0,32 Q112.5,8 225,32 T450,32 T675,32 T900,32" fill="none" stroke="#2FD1C0" stroke-width="2" opacity="0.5"/>
+  </svg>
+</header>
+
+<nav class="tabs">
+  <div class="tabs-inner" id="tabRow"></div>
+</nav>
+
+<!-- 本日のレース -->
+<div class="page" id="page-today">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Today's condition × history</div>
+      <h2>本日のレース条件と、過去の傾向</h2>
+      <p>そのレースの実際の条件(天候・潮・出走選手)と、同じ条件での過去の集計データを並べています。判断材料の提供のみで、予想・推奨はしていません。</p>
+      <p id="sampleNotice" style="display:none;color:var(--bad);margin-top:4px;">※ races.json が見つからないため、サンプルデータを表示しています。</p>
+    </div>
+    <div class="race-date-row" id="raceDateRow"></div>
+    <div class="venue-row" id="raceVenueRow"></div>
+    <div class="race-list" id="raceList"></div>
+    <div class="card race-detail" id="raceDetailCard"></div>
+  </div>
+</div>
+
+<!-- 潮データ -->
+<div class="page" id="page-tide">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Tide × phase</div>
+      <h2>潮回り×局面 コース1着率</h2>
+      <p>潮の影響を受ける18場について、潮回り×局面ごとのコース1着率をまとめています。◎ = 実測データ登録済み。</p>
+    </div>
+    <div class="venue-row" id="venueRowTide"></div>
+    <div class="card" id="tideCard"></div>
+    <div class="legend">
+      <div class="legend-item"><span class="swatch" style="background:var(--good)"></span>会場平均より高い</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--bad)"></span>会場平均より低い</div>
+      <div class="legend-item"><span class="swatch" style="background:var(--bg-card-2)"></span>サンプル不足(参考値)</div>
+    </div>
+  </div>
+</div>
+
+<!-- コース別成績 -->
+<div class="page" id="page-course">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Course stats</div>
+      <h2>会場別 コース成績</h2>
+      <p>進入コースごとの1着率・2着率・3着率。会場によってどれだけ差があるかを見比べられます。</p>
+    </div>
+    <div class="venue-row" id="venueRowCourse"></div>
+    <div class="card" id="courseCard"></div>
+  </div>
+</div>
+
+<!-- 決まり手データ -->
+<div class="page" id="page-kimarite">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Winning style</div>
+      <h2>決まり手データ(逃げ/まくり/差し/抜き)</h2>
+      <p>コースごとに、どんな決まり手で勝つ傾向があるか。まくられやすいコース、まくりが決まりやすいコースが分かります。</p>
+    </div>
+    <div class="venue-row" id="venueRowKimarite"></div>
+    <div class="card" id="kimariteCard"></div>
+  </div>
+</div>
+
+<!-- コース相性 -->
+<div class="page" id="page-compat">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Course compatibility</div>
+      <h2>コースの相性(隣コースのタイプ別)</h2>
+      <p>隣接コース(1つ外側)に「まくり・まくり差しが得意なタイプ」の選手がいる場合と、そうでない場合とで、対象コースの1着率がどう変わるかを集計しています。個別選手同士の対戦ではなく、通算成績から見た"タイプ"で比較しています。</p>
+    </div>
+    <div class="card" id="compatCard"></div>
+  </div>
+</div>
+
+<!-- 実績 -->
+<div class="page" id="page-track">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Track record</div>
+      <h2>予想モデルの実績</h2>
+      <p>このモデルが実際にどれくらい当たっているか、回収率はどうかを公開しています。</p>
+    </div>
+    <div class="card">
+      <div class="placeholder">
+        <div class="big">実績データは準備中です</div>
+        <div>直近の的中率・回収率の推移をここに公開予定です。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section style="padding:40px 20px 0;">
+  <div class="wrap">
+    <div class="section-head">
+      <div class="eyebrow">Legend</div>
+      <h2>艇番カラー</h2>
+    </div>
+    <div class="boats">
+      <div class="boat" style="background:var(--b1);color:var(--b1-text)">1</div>
+      <div class="boat" style="background:var(--b2);color:var(--b2-text)">2</div>
+      <div class="boat" style="background:var(--b3);color:var(--b3-text)">3</div>
+      <div class="boat" style="background:var(--b4);color:var(--b4-text)">4</div>
+      <div class="boat" style="background:var(--b5);color:var(--b5-text)">5</div>
+      <div class="boat" style="background:var(--b6);color:var(--b6-text)">6</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="card">
+      <p><strong style="color:var(--text-secondary)">このサイトについて</strong><br>
+      競艇の予想に使えるデータを集計・公開しています。現在は児島のみ実データが入っています。他の会場・データ種別は準備でき次第、順次追加していきます。</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+const PHASES = ["上げ潮","満潮付近","下げ潮","干潮付近"];
+const TIDE_TYPES = ["大潮","中潮","小潮","若潮","長潮"];
+const ALL_VENUES = ["児島","江戸川","平和島","浜名湖","蒲郡","常滑","津","三国","鳴門","丸亀","宮島","徳山","下関","若松","芦屋","福岡","唐津","大村"];
+
+const TIDE_DATA = {
+  "児島": {
+    ready:true, avg:55.6, total:11218,
+    data:{
+      "大潮":[69.4,49.8,55.2,72.7], "中潮":[53.0,49.1,58.8,61.8],
+      "小潮":[50.7,59.6,69.7,59.5], "若潮":[64.2,null,53.8,58.0],
+      "長潮":[61.6,50.0,57.6,50.7],
+    },
+    n:{
+      "大潮":[85,641,1606,231], "中潮":[1143,1011,1956,411],
+      "小潮":[1576,456,142,388], "若潮":[193,null,325,226],
+      "長潮":[359,6,191,272],
+    }
+  }
+};
+
+// コース成績・決まり手データ。venue_course_stats.json (自動解析.py が
+// 再学習後に export_venue_course_stats_json() で書き出す) を外部ファイルとして
+// 読み込む。無い/読み込めない場合は空のまま(準備中表示)にする。
+let COURSE_DATA = { "児島": null };
+let KIMARITE_DATA = { "児島": null };
+let VENUE_COURSE_ALL_VENUES = ALL_VENUES;
+
+async function loadVenueCourseStats(){
+  try {
+    const res = await fetch('venue_course_stats.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('not found');
+    const json = await res.json();
+    if(json && Object.keys(json).length > 0){
+      const newCourse = {}, newKimarite = {};
+      for(const venue in json){
+        newCourse[venue] = json[venue];   // [{course,win1,win3,top}, ...]
+        newKimarite[venue] = json[venue]; // 同じデータを決まり手タブでも使う(topに含まれる)
+      }
+      COURSE_DATA = newCourse;
+      KIMARITE_DATA = newKimarite;
+    }
+  } catch(e) {
+    // venue_course_stats.json が無い場合は既定の空データのまま(準備中表示)
+  }
+  renderVenueRow('venueRowCourse', COURSE_DATA, 'course');
+  renderVenueRow('venueRowKimarite', KIMARITE_DATA, 'kimarite');
+  renderCourseCard();
+  renderKimariteCard();
+}
+
+let COMPAT_DATA = null;
+
+async function loadCompatStats(){
+  try {
+    const res = await fetch('compatibility_stats.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('not found');
+    const json = await res.json();
+    if(json && Object.keys(json).length > 0){
+      COMPAT_DATA = json;
+    }
+  } catch(e) {
+    COMPAT_DATA = null;
+  }
+  renderCompatCard();
+}
+
+function renderCompatCard(){
+  const card = document.getElementById('compatCard');
+  if(!COMPAT_DATA){
+    card.innerHTML = `<div class="placeholder"><div class="big">コース相性データは準備中です</div><div>データ収集・再学習が完了次第、公開します。</div></div>`;
+    return;
+  }
+  let rows = "";
+  for(const course of Object.keys(COMPAT_DATA).sort()){
+    if(course.startsWith('_')) continue; // 🆕 _median_makuri_rate 等のメタ情報はコースデータではないのでスキップ
+    const d = COMPAT_DATA[course];
+    const diff = d.vs_high_makuri_neighbor.win_rate - d.vs_low_makuri_neighbor.win_rate;
+    rows += `
+      <div class="card" style="background:var(--bg-card-2);margin-top:12px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+          <div class="entry-boat" style="background:${boatColorVar(Number(course))};color:${boatTextVar(Number(course))}">${course}</div>
+          <div style="font-size:13px;color:var(--text-secondary);">${course}コース(全体1着率 ${d.course_win_rate.toFixed(1)}%)</div>
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);">隣にまくり得意タイプがいる時</div>
+            <div class="axis-prob" style="font-size:22px;color:${diff<0?'var(--bad)':'var(--accent)'}">${d.vs_high_makuri_neighbor.win_rate.toFixed(1)}%</div>
+            <div style="font-size:10px;color:var(--text-muted);">n=${d.vs_high_makuri_neighbor.n}</div>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text-muted);">隣がまくり不得意タイプの時</div>
+            <div class="axis-prob" style="font-size:22px;">${d.vs_low_makuri_neighbor.win_rate.toFixed(1)}%</div>
+            <div style="font-size:10px;color:var(--text-muted);">n=${d.vs_low_makuri_neighbor.n}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+  card.innerHTML = rows;
+}
+
+// 「本日のレース」データ。races.json を外部ファイルとして読み込む。
+// races.json が無い/読み込めない環境向けにサンプルデータへフォールバックする。
+const SAMPLE_TODAY_RACES = {
+  "20260824": [
+    {
+      venue:"児島", race:"10R",
+      weather:{tenki:"晴", kaze:"向かい風", kazeV:"3.0m", nami:"3.0cm"},
+      tideType:"大潮", tidePhase:"干潮付近",
+      entries:[
+        {boat:1, name:"サンプル選手A", course:1, ex:6.80, winRate:6.10, motor:38.0},
+        {boat:2, name:"サンプル選手B", course:2, ex:6.85, winRate:5.40, motor:30.5},
+        {boat:3, name:"サンプル選手C", course:3, ex:6.78, winRate:5.90, motor:45.2},
+        {boat:4, name:"サンプル選手D", course:4, ex:6.90, winRate:4.80, motor:33.0},
+        {boat:5, name:"サンプル選手E", course:5, ex:6.95, winRate:5.10, motor:36.7},
+        {boat:6, name:"サンプル選手F", course:6, ex:6.88, winRate:4.50, motor:28.9},
+      ],
+    },
+  ]
+};
+
+let TODAY_RACES = SAMPLE_TODAY_RACES;
+let TODAY_RACE_DATES = Object.keys(SAMPLE_TODAY_RACES);
+let usingSampleData = true;
+let currentRaceDate = TODAY_RACE_DATES[0];
+let currentRaceVenue = null;
+let currentRaceIdx = -1;  // -1 = まだ何も選ばれていない(会場を選んだ直後の状態)
+
+const boatColorVar = i => ['var(--b1)','var(--b2)','var(--b3)','var(--b4)','var(--b5)','var(--b6)'][i-1];
+const boatTextVar  = i => ['var(--b1-text)','var(--b2-text)','var(--b3-text)','var(--b4-text)','var(--b5-text)','var(--b6-text)'][i-1];
+
+function renderRaceDates(){
+  const row = document.getElementById('raceDateRow');
+  row.innerHTML = "";
+  TODAY_RACE_DATES.forEach(d=>{
+    const pill = document.createElement('div');
+    pill.className = 'venue-pill' + (d===currentRaceDate ? ' active':'');
+    pill.textContent = d.slice(0,4)+"/"+d.slice(4,6)+"/"+d.slice(6,8);
+    pill.onclick = ()=>{ currentRaceDate = d; currentRaceVenue = null; currentRaceIdx = -1; renderRaceDates(); renderVenuePills(); renderRaceList(); renderRaceDetail(); };
+    row.appendChild(pill);
+  });
+}
+
+// 🆕 会場ごとにグルーピングして、まず会場を選んでもらう(144レースを
+//   フラットに並べると探しにくいため)。
+function racesGroupedByVenue(){
+  const races = TODAY_RACES[currentRaceDate] || [];
+  const map = {};
+  races.forEach((r,i)=>{
+    (map[r.venue] = map[r.venue] || []).push({r, idx:i});
+  });
+  return map;
+}
+
+function renderVenuePills(){
+  const row = document.getElementById('raceVenueRow');
+  const grouped = racesGroupedByVenue();
+  const venues = Object.keys(grouped);
+  if(!currentRaceVenue || !grouped[currentRaceVenue]) currentRaceVenue = venues[0] || null;
+  row.innerHTML = "";
+  venues.forEach(v=>{
+    const pill = document.createElement('div');
+    pill.className = 'venue-pill' + (v===currentRaceVenue ? ' active':'');
+    pill.textContent = `${v}(${grouped[v].length}R)`;
+    pill.onclick = ()=>{ currentRaceVenue = v; currentRaceIdx = -1; renderVenuePills(); renderRaceList(); renderRaceDetail(); };
+    row.appendChild(pill);
+  });
+}
+
+function renderRaceList(){
+  const list = document.getElementById('raceList');
+  list.innerHTML = "";
+  const grouped = racesGroupedByVenue();
+  const items = currentRaceVenue ? (grouped[currentRaceVenue] || []) : [];
+  items.forEach(({r, idx})=>{
+    const item = document.createElement('div');
+    item.className = 'race-item' + (idx===currentRaceIdx ? ' active':'');
+    item.innerHTML = `<div class="rv">${r.race}</div><div class="rr">${r.provisional ? '確定前' : (r.tideType||'')+' '+(r.tidePhase||'')}</div>`;
+    item.onclick = ()=>{
+      currentRaceIdx = idx;
+      renderRaceList();
+      renderRaceDetail();
+      // クリックしても画面下の詳細が見えていないと「反応してない」ように
+      // 見えてしまうため、詳細カードまで自動スクロールする。
+      document.getElementById('raceDetailCard').scrollIntoView({behavior:'smooth', block:'start'});
+    };
+    list.appendChild(item);
+  });
+}
+
+// 🆕 courseStyle(選手×今日の進入コースでの決まり手傾向)を、出走表の各行の
+//   下に小さいバッジ行として差し込む。データが無い(courseStyle未合体、または
+//   サンプル数不足)場合は何も表示しない。
+function styleBadge(label, value){
+  return `<span style="background:rgba(255,255,255,.06);color:var(--text-secondary);font-size:11px;padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${label} ${value.toFixed(1)}%</span>`;
+}
+function dangerBadge(label, value){
+  // 「やられ側」の指標(差され率・まくられ率)は目立たせるため赤系にする
+  const hot = value >= 20;
+  const color = hot ? 'var(--bad)' : 'var(--text-secondary)';
+  const bg = hot ? 'rgba(232,86,79,.14)' : 'rgba(255,255,255,.06)';
+  return `<span style="background:${bg};color:${color};font-size:11px;padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${label} ${value.toFixed(1)}%</span>`;
+}
+function courseStyleRow(e){
+  const cs = e.courseStyle;
+  if(!cs) return '';
+  const badges = [];
+  if(cs.makuri_rate != null) badges.push(styleBadge('まくり', cs.makuri_rate));
+  if(cs.sashi_rate != null)  badges.push(styleBadge('差し', cs.sashi_rate));
+  if(cs.nige_rate != null && e.course === 1) badges.push(styleBadge('逃げ', cs.nige_rate));
+  // 1号艇は「刺され率(差され率)」を最優先で見せる。他コースはまくられ率を出す。
+  if(e.course === 1 && cs.sasare_rate != null) badges.push(dangerBadge('刺され率', cs.sasare_rate));
+  if(cs.makurare_rate != null) badges.push(dangerBadge('まくられ率', cs.makurare_rate));
+  if(badges.length === 0 && !e.todayCompat) return '';
+
+  const lowN = cs.reliable === false ? `<span style="font-size:10px;color:var(--text-muted);margin-left:6px;">n=${cs.n}(参考)</span>` : '';
+
+  // 🆕 今日の実際の隣コース選手を使った相性(merge_into_races_json.pyが計算)
+  let compatHtml = '';
+  const tc = e.todayCompat;
+  if(tc){
+    const hot = tc.isHighType;
+    const color = hot ? 'var(--bad)' : 'var(--accent)';
+    compatHtml = `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">
+      隣${tc.neighborBoat}号艇 ${tc.neighborName}(通算まくり率${tc.neighborMakuriRate.toFixed(1)}%・${hot?'得意':'控えめ'}タイプ)の時 →
+      <span style="color:${color};font-weight:700;font-family:'JetBrains Mono',monospace;">${tc.winRate.toFixed(1)}%</span>
+      <span style="color:var(--text-muted);">(基準${tc.courseWinRateBaseline.toFixed(1)}% n=${tc.n})</span>
+    </div>`;
+  }
+
+  return `<tr>
+    <td></td>
+    <td colspan="5" style="padding-top:0;text-align:left;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:2px 0 4px;">${badges.join('')}${lowN}</div>
+      ${compatHtml}
+      <div style="padding-bottom:8px;"></div>
+    </td>
+  </tr>`;
+}
+
+// 🆕 会場のコース別成績(自動解析.pyがraces.json内に既に1レースごと埋め込み
+//   済みの venueCourseStats をそのまま使う。追加のfetchは不要)。
+function venueCourseStatsHtml(r){
+  const stats = r.venueCourseStats;
+  if(!stats || stats.length === 0) return '';
+  const cells = stats.map(c => `
+    <div style="flex:1;min-width:70px;text-align:center;">
+      <div class="entry-boat" style="margin:0 auto 6px;background:${boatColorVar(c.course)};color:${boatTextVar(c.course)}">${c.course}</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;color:var(--accent);">${c.win1.toFixed(1)}%</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">3着内 ${c.win3.toFixed(1)}%</div>
+      <div style="font-size:10px;color:var(--text-secondary);margin-top:4px;">${c.top||'-'}</div>
+    </div>`).join('');
+  return `
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">${r.venue} コース別成績(1着率/決まり手)</h2></div>
+    <div class="card" style="background:var(--bg-card-2);margin-top:8px;">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">${cells}</div>
+    </div>`;
+}
+
+function renderRaceDetail(){
+  const card = document.getElementById('raceDetailCard');
+  const races = TODAY_RACES[currentRaceDate] || [];
+  const r = races[currentRaceIdx];
+  if(!r){ card.innerHTML = `<div class="placeholder"><div class="big">上のレース番号を選んでください</div></div>`; return; }
+
+  const entryRows = r.entries.map(e=>{
+    const career = e.career;
+    const careerHtml = career ? `<div style="font-size:10px;color:var(--text-muted);margin-top:2px;">
+        ${career.branch||''} ${career.grade||''} 通算勝率${career.careerWinRate!=null?career.careerWinRate.toFixed(2):'-'}
+      </div>` : '';
+    return `<tr>
+      <td><div class="entry-boat" style="background:${boatColorVar(e.boat)};color:${boatTextVar(e.boat)}">${e.boat}</div></td>
+      <td><span class="entry-name">${e.name}</span>${careerHtml}</td>
+      <td class="entry-num">${e.course}コース${e.courseProvisional ? '<span style="color:var(--text-muted);font-size:10px;"> (仮)</span>' : ''}</td>
+      <td class="entry-num">${e.ex != null ? e.ex.toFixed(2) : '-'}</td>
+      <td class="entry-num">${e.winRate != null ? e.winRate.toFixed(2) : '-'}</td>
+      <td class="entry-num">${e.motor != null ? e.motor.toFixed(1)+'%' : '-'}</td>
+    </tr>` + courseStyleRow(e);
+  }).join('');
+
+  // 今日の潮条件と、潮データタブの実績表を突き合わせる
+  let tideCrossRef = "";
+  const tv = TIDE_DATA[r.venue];
+  if(tv && tv.ready && r.tideType && r.tidePhase){
+    const pi = PHASES.indexOf(r.tidePhase);
+    const val = (pi>=0) ? tv.data[r.tideType][pi] : null;
+    if(val !== null && val !== undefined){
+      const diff = val - tv.avg;
+      tideCrossRef = `
+        <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">今日の潮条件での過去実績(1コース)</h2></div>
+        <div class="card" style="background:var(--bg-card-2);margin-top:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <div style="font-size:13px;color:var(--text-secondary);">${r.venue} / ${r.tideType} / ${r.tidePhase}</div>
+              <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">場平均(1コース1着率) ${tv.avg.toFixed(1)}%</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="axis-prob" style="color:${diff>=0?'var(--accent)':'var(--bad)'}">${val.toFixed(1)}%</div>
+              <div class="axis-label">この条件での1コース1着率(${diff>=0?'+':''}${diff.toFixed(1)}pt)</div>
+            </div>
+          </div>
+        </div>`;
+    }
+  }
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div><div class="venue-name">${r.venue} ${r.race}</div><div class="venue-meta">${r.provisional ? '朝の番組表ベース(進入は仮の枠なり)' : '本日の実際の条件'}</div></div>
+      ${r.provisional ? `<span class="rank-badge" style="background:var(--b5);color:var(--b5-text);">確定前</span>` : ''}
+    </div>
+    <div class="weather-row">
+      <div class="weather-item">天候 <b>${r.weather.tenki}</b></div>
+      <div class="weather-item">風向 <b>${r.weather.kaze}</b></div>
+      <div class="weather-item">風速 <b>${r.weather.kazeV}</b></div>
+      <div class="weather-item">波高 <b>${r.weather.nami}</b></div>
+      ${r.tideType ? `<div class="weather-item">潮回り <b>${r.tideType}</b></div>` : ''}
+      ${r.tidePhase ? `<div class="weather-item">局面 <b>${r.tidePhase}</b></div>` : ''}
+    </div>
+    ${venueCourseStatsHtml(r)}
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">出走表(決まり手・相性つき)</h2></div>
+    <p style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;">${r.provisional ? '進入コースは枠なり想定の仮表示です。直前の展示航走で実際の進入コースが確定次第、自動的に更新されます。' : '各選手の下に、今日の進入コースでの決まり手傾向と、実際の隣コース選手との相性を表示しています。'}</p>
+    <table class="entry-table">
+      <thead><tr><th></th><th>選手</th><th style="text-align:right;">進入</th><th style="text-align:right;">展示</th><th style="text-align:right;">全国勝率</th><th style="text-align:right;">モーター2連率</th></tr></thead>
+      <tbody>${entryRows}</tbody>
+    </table>
+    ${tideCrossRef}
+  `;
+}
+
+let currentTab = "tide";
+let currentVenue = { tide:"児島", course:"児島", kimarite:"児島" };
+
+const TABS = [
+  {id:"today", label:"本日のレース"},
+  {id:"tide", label:"潮データ"},
+  {id:"course", label:"コース別成績"},
+  {id:"kimarite", label:"決まり手"},
+  {id:"compat", label:"コース相性"},
+  {id:"track", label:"モデル実績"},
+];
+
+function renderTabs(){
+  const row = document.getElementById('tabRow');
+  row.innerHTML = "";
+  TABS.forEach(t=>{
+    const btn = document.createElement('div');
+    btn.className = 'tab-btn' + (t.id===currentTab ? ' active':'');
+    btn.textContent = t.label;
+    btn.onclick = ()=>{
+      currentTab = t.id;
+      document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+      document.getElementById('page-'+t.id).classList.add('active');
+      renderTabs();
+    };
+    row.appendChild(btn);
+  });
+}
+
+function renderVenueRow(containerId, dataSet, tabKey){
+  const row = document.getElementById(containerId);
+  row.innerHTML = "";
+  ALL_VENUES.forEach(name=>{
+    const ready = dataSet[name] && dataSet[name] !== null && (dataSet[name].ready !== false);
+    const pill = document.createElement('div');
+    pill.className = 'venue-pill' + (name===currentVenue[tabKey] ? ' active':'');
+    pill.textContent = (ready ? "◎ " : "") + name;
+    pill.onclick = ()=>{ currentVenue[tabKey] = name; renderVenueRow(containerId, dataSet, tabKey); renderAll(); };
+    row.appendChild(pill);
+  });
+}
+
+function cellColor(val, avg){
+  if(val===null || val===undefined) return {bg:'var(--bg-card-2)', fg:'var(--text-muted)'};
+  const diff = val - avg;
+  if(diff >= 3) return {bg:'var(--good)', fg:'var(--good-text)'};
+  if(diff <= -3) return {bg:'var(--bad)', fg:'var(--bad-text)'};
+  return {bg:'var(--bg-card-2)', fg:'var(--text-primary)'};
+}
+
+function renderTideCard(){
+  const card = document.getElementById('tideCard');
+  const name = currentVenue.tide;
+  const v = TIDE_DATA[name];
+
+  if(!v || !v.ready){
+    card.innerHTML = `<div class="card-top"><div><div class="venue-name">${name}</div><div class="venue-meta">DATA NOT YET REGISTERED</div></div></div>
+      <div class="placeholder"><div class="big">このデータはまだ準備中です</div><div>順次追加予定です。しばらくお待ちください。</div></div>`;
+    return;
+  }
+
+  let rows = "";
+  TIDE_TYPES.forEach(t=>{
+    let cells = "";
+    PHASES.forEach((p,i)=>{
+      const val = v.data[t][i];
+      const n = v.n[t][i];
+      const low = n!==null && n<50;
+      const c = cellColor(val, v.avg);
+      if(val===null){
+        cells += `<td><div class="cell na">—</div></td>`;
+      } else {
+        cells += `<td><div class="cell" style="background:${low?'var(--bg-card-2)':c.bg};color:${low?'var(--text-secondary)':c.fg}">${val.toFixed(1)}%<span class="n">n=${n}</span></div></td>`;
+      }
+    });
+    rows += `<tr><td>${t}</td>${cells}</tr>`;
+  });
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div><div class="venue-name">${name}</div><div class="venue-meta">TOTAL ${v.total.toLocaleString()} RACES</div></div>
+      <div class="avg-box"><div class="avg-label">場平均(1コース1着率)</div><div class="avg-value">${v.avg.toFixed(1)}%</div></div>
+    </div>
+    <table class="datatable"><thead><tr><th></th>${PHASES.map(p=>`<th>${p}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function renderCourseCard(){
+  const card = document.getElementById('courseCard');
+  const name = currentVenue.course;
+  const v = COURSE_DATA[name];
+
+  if(!v){
+    card.innerHTML = `<div class="card-top"><div><div class="venue-name">${name}</div><div class="venue-meta">DATA NOT YET REGISTERED</div></div></div>
+      <div class="placeholder"><div class="big">コース別成績データは準備中です</div><div>学習完了後、1着率・2着率・3着率をここに追加予定です。</div></div>`;
+    return;
+  }
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div><div class="venue-name">${name}</div><div class="venue-meta">進入コース別 1〜3着率</div></div>
+    </div>
+    <div class="vcourse-grid">
+      ${v.map(c=>`
+        <div class="vcourse-cell">
+          <div class="num" style="background:${boatColorVar(c.course)};color:${boatTextVar(c.course)}">${c.course}</div>
+          <div class="win1">${c.win1.toFixed(1)}%</div>
+          <div class="win1-label">1着率</div>
+          <div class="sub">3着以内 ${c.win3.toFixed(1)}%</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderKimariteCard(){
+  const card = document.getElementById('kimariteCard');
+  const name = currentVenue.kimarite;
+  const v = KIMARITE_DATA[name];
+
+  if(!v){
+    card.innerHTML = `<div class="card-top"><div><div class="venue-name">${name}</div><div class="venue-meta">DATA NOT YET REGISTERED</div></div></div>
+      <div class="placeholder"><div class="big">決まり手データは準備中です</div><div>学習完了後、コースごとの逃げ/まくり/差し/抜き率をここに追加予定です。</div></div>`;
+    return;
+  }
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div><div class="venue-name">${name}</div><div class="venue-meta">コース別 主な決まり手(1着時)</div></div>
+    </div>
+    <div class="vcourse-grid">
+      ${v.map(c=>`
+        <div class="vcourse-cell">
+          <div class="num" style="background:${boatColorVar(c.course)};color:${boatTextVar(c.course)}">${c.course}</div>
+          <div class="win1" style="font-size:15px;">${c.top}</div>
+          <div class="win1-label">主な決まり手</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderAll(){
+  renderTideCard();
+  renderCourseCard();
+  renderKimariteCard();
+}
+
+function animateWave(){
+  const path = document.getElementById('wavePath');
+  let t = 0;
+  function frame(){
+    t += 0.008;
+    const amp = 8;
+    const y1 = 32 + Math.sin(t)*amp;
+    const y2 = 32 + Math.sin(t+1.2)*amp;
+    const y3 = 32 + Math.sin(t+2.4)*amp;
+    path.setAttribute('d', `M0,32 Q112.5,${y1} 225,32 T450,32 Q562.5,${y2} 675,32 T900,${y3}`);
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+
+async function loadTodayRaces(){
+  try {
+    // 🆕 courseStyle(まくり率/差し率/刺され率等)を合体済みのファイルを優先。
+    //   merge_into_races_json.py がまだ動いていない環境では races.json に
+    //   フォールバックする(courseStyleが無いだけで、他の表示は今まで通り)。
+    let res = await fetch('races_enriched.json', {cache:'no-store'});
+    if(!res.ok) res = await fetch('races.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('not found');
+    const json = await res.json();
+    if(json && Object.keys(json).length > 0){
+      TODAY_RACES = json;
+      TODAY_RACE_DATES = Object.keys(TODAY_RACES).sort().reverse();
+      usingSampleData = false;
+    }
+  } catch(e) {
+    TODAY_RACES = SAMPLE_TODAY_RACES;
+    TODAY_RACE_DATES = Object.keys(SAMPLE_TODAY_RACES);
+    usingSampleData = true;
+  }
+  currentRaceDate = TODAY_RACE_DATES[0];
+  currentRaceVenue = null;
+  currentRaceIdx = -1;
+  renderRaceDates();
+  renderVenuePills();
+  renderRaceList();
+  renderRaceDetail();
+  const notice = document.getElementById('sampleNotice');
+  if(notice) notice.style.display = usingSampleData ? 'block' : 'none';
+}
+
+renderTabs();
+document.getElementById('page-today').classList.add('active');
+loadTodayRaces();
+renderVenueRow('venueRowTide', TIDE_DATA, 'tide');
+loadVenueCourseStats();
+loadCompatStats();
+renderAll();
+animateWave();
+</script>
+
+</body>
+</html>
