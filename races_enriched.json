@@ -42703,26 +42703,24 @@
     {
       "venue": "丸亀",
       "race": "7R",
-      "rank": null,
-      "axisBoat": null,
-      "rawProb": null,
-      "calibratedProb": null,
+      "rank": "S【鉄板◎】",
+      "axisBoat": 1,
+      "rawProb": 84.3,
+      "calibratedProb": 84.3,
       "weather": {
-        "tenki": "-",
-        "kaze": "-",
-        "kazeV": "-",
-        "nami": "-"
+        "tenki": "曇",
+        "kaze": "無風",
+        "kazeV": "0.0m",
+        "nami": "0.0cm"
       },
       "entries": [
         {
           "boat": 1,
-          "racerId": "4083",
           "name": "福島勇樹",
           "course": 1,
-          "ex": null,
+          "ex": 6.74,
           "winRate": 7.29,
           "motor": 29.91,
-          "courseProvisional": true,
           "career": {
             "branch": "東京",
             "grade": "A1",
@@ -42731,37 +42729,16 @@
             "careerAvgST": 0.14,
             "c1PlaceRate": 96.7
           },
-          "courseStyle": {
-            "n": 64,
-            "nige_rate": 65.6,
-            "makuri_rate": 1.7,
-            "sashi_rate": 3.1,
-            "nuki_rate": 5.9,
-            "sasare_rate": 5.9,
-            "makurare_rate": 11.1,
-            "makuri_sasare_rate": 5.0,
-            "avg_st": 0.1,
-            "reliable": true
-          },
-          "todayCompat": {
-            "neighborBoat": 2,
-            "neighborName": "小池公生",
-            "neighborMakuriRate": 4.2,
-            "isHighType": true,
-            "winRate": 55.1,
-            "n": 22923,
-            "courseWinRateBaseline": 55.7
-          }
+          "courseStyle": null,
+          "todayCompat": null
         },
         {
           "boat": 2,
-          "racerId": "4521",
           "name": "小池公生",
           "course": 2,
-          "ex": null,
+          "ex": 6.89,
           "winRate": 5.19,
           "motor": 33.9,
-          "courseProvisional": true,
           "career": {
             "branch": "福岡",
             "grade": "B1",
@@ -42770,37 +42747,16 @@
             "careerAvgST": 0.21,
             "c2PlaceRate": 28.5
           },
-          "courseStyle": {
-            "n": 40,
-            "nige_rate": 2.6,
-            "makuri_rate": 5.6,
-            "sashi_rate": 7.6,
-            "nuki_rate": 5.0,
-            "sasare_rate": 0.9,
-            "makurare_rate": 13.8,
-            "makuri_sasare_rate": 9.8,
-            "avg_st": 0.17,
-            "reliable": true
-          },
-          "todayCompat": {
-            "neighborBoat": 3,
-            "neighborName": "鈴木柊介",
-            "neighborMakuriRate": 0.8,
-            "isHighType": false,
-            "winRate": 14.3,
-            "n": 17903,
-            "courseWinRateBaseline": 13.0
-          }
+          "courseStyle": null,
+          "todayCompat": null
         },
         {
           "boat": 3,
-          "racerId": "5385",
           "name": "鈴木柊介",
           "course": 3,
-          "ex": null,
+          "ex": 6.79,
           "winRate": 2.58,
           "motor": 50.89,
-          "courseProvisional": true,
           "career": {
             "branch": "静岡",
             "grade": "B1",
@@ -42809,37 +42765,16 @@
             "careerAvgST": 0.14,
             "c3PlaceRate": 0.0
           },
-          "courseStyle": {
-            "n": 3,
-            "nige_rate": 1.9,
-            "makuri_rate": 6.2,
-            "sashi_rate": 5.0,
-            "nuki_rate": 3.1,
-            "sasare_rate": 5.0,
-            "makurare_rate": 6.7,
-            "makuri_sasare_rate": 2.5,
-            "avg_st": 0.12,
-            "reliable": false
-          },
-          "todayCompat": {
-            "neighborBoat": 4,
-            "neighborName": "有山望",
-            "neighborMakuriRate": 0.9,
-            "isHighType": false,
-            "winRate": 14.1,
-            "n": 18267,
-            "courseWinRateBaseline": 12.8
-          }
+          "courseStyle": null,
+          "todayCompat": null
         },
         {
           "boat": 4,
-          "racerId": "5381",
           "name": "有山望",
           "course": 4,
-          "ex": null,
+          "ex": 6.79,
           "winRate": 3.76,
           "motor": 30.18,
-          "courseProvisional": true,
           "career": {
             "branch": "大阪",
             "grade": "B1",
@@ -42848,37 +42783,16 @@
             "careerAvgST": 0.17,
             "c4PlaceRate": 15.0
           },
-          "courseStyle": {
-            "n": 38,
-            "nige_rate": 2.7,
-            "makuri_rate": 3.5,
-            "sashi_rate": 0.9,
-            "nuki_rate": 0.6,
-            "sasare_rate": 1.1,
-            "makurare_rate": 1.4,
-            "makuri_sasare_rate": 4.1,
-            "avg_st": 0.17,
-            "reliable": true
-          },
-          "todayCompat": {
-            "neighborBoat": 5,
-            "neighborName": "小林文彦",
-            "neighborMakuriRate": 4.3,
-            "isHighType": true,
-            "winRate": 10.1,
-            "n": 22070,
-            "courseWinRateBaseline": 10.5
-          }
+          "courseStyle": null,
+          "todayCompat": null
         },
         {
           "boat": 5,
-          "racerId": "4549",
           "name": "小林文彦",
           "course": 5,
-          "ex": null,
+          "ex": 6.94,
           "winRate": 6.35,
           "motor": 36.53,
-          "courseProvisional": true,
           "career": {
             "branch": "福岡",
             "grade": "A2",
@@ -42887,37 +42801,16 @@
             "careerAvgST": 0.19,
             "c5PlaceRate": 28.5
           },
-          "courseStyle": {
-            "n": 45,
-            "nige_rate": 0.3,
-            "makuri_rate": 3.0,
-            "sashi_rate": 0.8,
-            "nuki_rate": 0.5,
-            "sasare_rate": 0.9,
-            "makurare_rate": 1.1,
-            "makuri_sasare_rate": 0.4,
-            "avg_st": 0.21,
-            "reliable": true
-          },
-          "todayCompat": {
-            "neighborBoat": 6,
-            "neighborName": "木村仁紀",
-            "neighborMakuriRate": 8.2,
-            "isHighType": true,
-            "winRate": 5.8,
-            "n": 19314,
-            "courseWinRateBaseline": 6.1
-          }
+          "courseStyle": null,
+          "todayCompat": null
         },
         {
           "boat": 6,
-          "racerId": "4743",
           "name": "木村仁紀",
           "course": 6,
-          "ex": null,
+          "ex": 6.85,
           "winRate": 6.19,
           "motor": 39.6,
-          "courseProvisional": true,
           "career": {
             "branch": "滋賀",
             "grade": "A1",
@@ -42926,22 +42819,18 @@
             "careerAvgST": 0.14,
             "c6PlaceRate": 18.1
           },
-          "courseStyle": {
-            "n": 44,
-            "nige_rate": 0.3,
-            "makuri_rate": 1.0,
-            "sashi_rate": 0.8,
-            "nuki_rate": 0.5,
-            "sasare_rate": 0.9,
-            "makurare_rate": 1.2,
-            "makuri_sasare_rate": 0.5,
-            "avg_st": 0.17,
-            "reliable": true
-          }
+          "courseStyle": null
         }
       ],
       "reasonText": "",
-      "combos": [],
+      "combos": [
+        "1-2-5",
+        "1-2-6",
+        "1-2-3",
+        "1-3-6",
+        "1-5-6",
+        "1-4-6"
+      ],
       "venueCourseStats": [
         {
           "course": 1,
@@ -42980,7 +42869,6 @@
           "top": "まくり差し 37%"
         }
       ],
-      "provisional": true,
       "axisRecommendation": {
         "1": {
           "winRate": 42.2,
