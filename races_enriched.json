@@ -32253,6 +32253,13 @@
         }
       ],
       "provisional": true,
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "5-6-3",
+        "trifectaPayout": 20570,
+        "fetchedAt": "2026-08-28T14:06:43"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 43.5,
