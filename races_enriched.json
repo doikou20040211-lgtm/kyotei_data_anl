@@ -7913,6 +7913,13 @@
           "top": "まくり 38%"
         }
       ],
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "1-6-4",
+        "trifectaPayout": 4930,
+        "fetchedAt": "2026-08-28T15:28:28"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 32.4,
@@ -14665,6 +14672,13 @@
         }
       ],
       "provisional": true,
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "3-4-5",
+        "trifectaPayout": 32750,
+        "fetchedAt": "2026-08-28T15:28:59"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 44.2,
