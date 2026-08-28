@@ -359,6 +359,23 @@ async function loadVenueCourseStats(){
 
 let COMPAT_DATA = null;
 
+// 🆕 tide_stats.py が計算した全会場ぶんの潮データを読み込む。取得できない
+//   場合は児島だけのハードコードデータのままフォールバックする。
+async function loadTideStats(){
+  try {
+    const res = await fetch('tide_stats.json', {cache:'no-store'});
+    if(!res.ok) throw new Error('not found');
+    const json = await res.json();
+    if(json && Object.keys(json).length > 0){
+      Object.assign(TIDE_DATA, json);
+    }
+  } catch(e) {
+    // tide_stats.json が無ければ児島のハードコードのみで動作する
+  }
+  renderVenueRow('venueRowTide', TIDE_DATA, 'tide');
+  renderTideCard();
+}
+
 async function loadCompatStats(){
   try {
     const res = await fetch('compatibility_stats.json', {cache:'no-store'});
@@ -483,7 +500,15 @@ function renderRaceList(){
   items.forEach(({r, idx})=>{
     const item = document.createElement('div');
     item.className = 'race-item' + (idx===currentRaceIdx ? ' active':'');
-    item.innerHTML = `<div class="rv">${r.race}</div><div class="rr">${r.provisional ? '確定前' : (r.tideType||'')+' '+(r.tidePhase||'')}</div>`;
+    let sub;
+    if(r.result && r.result.trifectaCombo){
+      sub = `<span style="color:var(--accent);font-family:'JetBrains Mono',monospace;">${r.result.trifectaCombo}</span> 確定`;
+    } else if(r.provisional){
+      sub = '確定前';
+    } else {
+      sub = `${r.tideType||''} ${r.tidePhase||''}`;
+    }
+    item.innerHTML = `<div class="rv">${r.race}</div><div class="rr">${sub}</div>`;
     item.onclick = ()=>{
       currentRaceIdx = idx;
       renderRaceList();
@@ -514,11 +539,14 @@ function courseStyleRow(e){
   if(!cs) return '';
   const badges = [];
   if(cs.makuri_rate != null) badges.push(styleBadge('まくり', cs.makuri_rate));
-  if(cs.sashi_rate != null)  badges.push(styleBadge('差し', cs.sashi_rate));
+  // 🆕 差し(差す側の技術)は1号艇にとってほぼ意味が無い数値なので、
+  //   2〜6号艇にだけ表示する。
+  if(cs.sashi_rate != null && e.course !== 1) badges.push(styleBadge('差し', cs.sashi_rate));
   if(cs.nige_rate != null && e.course === 1) badges.push(styleBadge('逃げ', cs.nige_rate));
-  // 1号艇は「刺され率(差され率)」を最優先で見せる。他コースはまくられ率を出す。
+  // 🆕 刺され率・まくられ率(=やられる側の指標)は、実戦的に意味が大きい
+  //   1号艇だけに絞って表示する。
   if(e.course === 1 && cs.sasare_rate != null) badges.push(dangerBadge('刺され率', cs.sasare_rate));
-  if(cs.makurare_rate != null) badges.push(dangerBadge('まくられ率', cs.makurare_rate));
+  if(e.course === 1 && cs.makurare_rate != null) badges.push(dangerBadge('まくられ率', cs.makurare_rate));
   if(badges.length === 0 && !e.todayCompat) return '';
 
   const lowN = cs.reliable === false ? `<span style="font-size:10px;color:var(--text-muted);margin-left:6px;">n=${cs.n}(参考)</span>` : '';
@@ -562,6 +590,43 @@ function venueCourseStatsHtml(r){
     <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">${r.venue} コース別成績(1着率/決まり手)</h2></div>
     <div class="card" style="background:var(--bg-card-2);margin-top:8px;">
       <div style="display:flex;gap:8px;flex-wrap:wrap;">${cells}</div>
+    </div>`;
+}
+
+// 🆕 確定したレースの結果(着順・決まり手・3連単配当)を表示する。
+//   result_fetch.py が races.json に result を書き足すまでは何も出さない。
+function raceResultHtml(r){
+  const result = r.result;
+  if(!result) return '';
+  const rankRows = (r.entries||[]).map(e=>{
+    const place = result.rankings ? result.rankings[e.boat] : null;
+    const placeText = place == null ? '-' : (typeof place === 'number' ? `${place}着` : place);
+    const isWinner = place === 1;
+    return `<tr>
+      <td><div class="entry-boat" style="background:${boatColorVar(e.boat)};color:${boatTextVar(e.boat)}">${e.boat}</div></td>
+      <td><span class="entry-name">${e.name}</span></td>
+      <td class="entry-num" style="color:${isWinner?'var(--accent)':'var(--text-primary)'};font-weight:${isWinner?'700':'400'};">${placeText}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">レース結果(確定)</h2></div>
+    <div class="card" style="background:var(--bg-card-2);margin-top:8px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
+        <div>
+          <div style="font-size:12px;color:var(--text-muted);">3連単</div>
+          <div class="axis-prob" style="font-family:'JetBrains Mono',monospace;">${result.trifectaCombo || '-'}</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-size:12px;color:var(--text-muted);">配当</div>
+          <div class="axis-prob" style="color:var(--accent);">${result.trifectaPayout ? result.trifectaPayout.toLocaleString()+'円' : '-'}</div>
+        </div>
+        ${result.kimarite ? `<div style="text-align:right;"><div style="font-size:12px;color:var(--text-muted);">決まり手</div><div class="axis-prob">${result.kimarite}</div></div>` : ''}
+      </div>
+      <table class="entry-table">
+        <thead><tr><th></th><th>選手</th><th style="text-align:right;">着順</th></tr></thead>
+        <tbody>${rankRows}</tbody>
+      </table>
     </div>`;
 }
 
@@ -624,6 +689,7 @@ function renderRaceDetail(){
       ${r.tideType ? `<div class="weather-item">潮回り <b>${r.tideType}</b></div>` : ''}
       ${r.tidePhase ? `<div class="weather-item">局面 <b>${r.tidePhase}</b></div>` : ''}
     </div>
+    ${raceResultHtml(r)}
     ${venueCourseStatsHtml(r)}
     <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">出走表(決まり手・相性つき)</h2></div>
     <p style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;">${r.provisional ? '進入コースは枠なり想定の仮表示です。直前の展示航走で実際の進入コースが確定次第、自動的に更新されます。' : '各選手の下に、今日の進入コースでの決まり手傾向と、実際の隣コース選手との相性を表示しています。'}</p>
@@ -826,7 +892,7 @@ async function loadTodayRaces(){
 renderTabs();
 document.getElementById('page-today').classList.add('active');
 loadTodayRaces();
-renderVenueRow('venueRowTide', TIDE_DATA, 'tide');
+loadTideStats();
 loadVenueCourseStats();
 loadCompatStats();
 renderAll();
