@@ -11635,6 +11635,13 @@
           "top": "まくり 27%"
         }
       ],
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "1-2-6",
+        "trifectaPayout": 1800,
+        "fetchedAt": "2026-08-28T13:10:01"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 38.7,
@@ -36719,6 +36726,13 @@
           "top": "まくり差し 39%"
         }
       ],
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "1-3-4",
+        "trifectaPayout": 1540,
+        "fetchedAt": "2026-08-28T13:11:57"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 45.2,
@@ -57134,6 +57148,13 @@
         }
       ],
       "provisional": true,
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "3-1-4",
+        "trifectaPayout": 2100,
+        "fetchedAt": "2026-08-28T13:13:25"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 47.5,
