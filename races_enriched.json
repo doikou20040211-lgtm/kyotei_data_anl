@@ -1621,6 +1621,13 @@
           "top": "まくり差し 35%"
         }
       ],
+      "result": {
+        "rankings": null,
+        "kimarite": null,
+        "trifectaCombo": "5-1-4",
+        "trifectaPayout": 5590,
+        "fetchedAt": "2026-08-28T16:59:01"
+      },
       "axisRecommendation": {
         "1": {
           "winRate": 30.3,
