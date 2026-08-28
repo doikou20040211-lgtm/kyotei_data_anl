@@ -527,6 +527,10 @@ function renderRaceList(){
 function styleBadge(label, value){
   return `<span style="background:rgba(255,255,255,.06);color:var(--text-secondary);font-size:11px;padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${label} ${value.toFixed(1)}%</span>`;
 }
+// 🆕 ST等、%表記が合わない数値用のバッジ
+function valueBadge(label, value, digits){
+  return `<span style="background:rgba(255,255,255,.06);color:var(--text-secondary);font-size:11px;padding:3px 8px;border-radius:6px;font-family:'JetBrains Mono',monospace;white-space:nowrap;">${label} ${value.toFixed(digits)}</span>`;
+}
 function dangerBadge(label, value){
   // 「やられ側」の指標(差され率・まくられ率)は目立たせるため赤系にする
   const hot = value >= 20;
@@ -543,6 +547,7 @@ function courseStyleRow(e){
   //   2〜6号艇にだけ表示する。
   if(cs.sashi_rate != null && e.course !== 1) badges.push(styleBadge('差し', cs.sashi_rate));
   if(cs.nige_rate != null && e.course === 1) badges.push(styleBadge('逃げ', cs.nige_rate));
+  if(cs.avg_st != null) badges.push(valueBadge('平均ST', cs.avg_st, 2));
   // 🆕 刺され率・まくられ率(=やられる側の指標)は、実戦的に意味が大きい
   //   1号艇だけに絞って表示する。
   if(e.course === 1 && cs.sasare_rate != null) badges.push(dangerBadge('刺され率', cs.sasare_rate));
@@ -630,6 +635,88 @@ function raceResultHtml(r){
     </div>`;
 }
 
+// 🆕 予想スリット体形: 今日の6艇を、平均ST(コース別)の並びで
+//   スタートラインのイメージ図にする。STが早い(数値が小さい)艇ほど
+//   左(=先に踏み込む)に描く。avg_stが無い艇は中央値扱いで一番後ろに置く。
+function slitFormationHtml(r){
+  const entries = (r.entries||[]).filter(e=>e.course);
+  if(entries.length < 2) return '';
+  const withSt = entries.map(e=>({
+    boat: e.boat, course: e.course,
+    st: (e.courseStyle && e.courseStyle.avg_st != null) ? e.courseStyle.avg_st : null,
+  }));
+  const knownSt = withSt.filter(x=>x.st != null).map(x=>x.st);
+  if(knownSt.length === 0) return '';
+  const fallback = Math.max(...knownSt) + 0.02;
+  withSt.forEach(x=>{ if(x.st == null) x.st = fallback; });
+
+  const minSt = Math.min(...withSt.map(x=>x.st));
+  const maxSt = Math.max(...withSt.map(x=>x.st));
+  const range = Math.max(maxSt - minSt, 0.01);
+  const W = 640, H = 130, padL = 40, padR = 40;
+
+  const circles = withSt.map(x=>{
+    const t = (x.st - minSt) / range;             // 0(最速)〜1(最遅)
+    const cx = padL + t * (W - padL - padR);
+    return `<g>
+      <circle cx="${cx}" cy="70" r="18" fill="${boatColorVar(x.boat)}" stroke="rgba(255,255,255,.15)" stroke-width="1"/>
+      <text x="${cx}" y="75" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-weight="700" font-size="14" fill="${boatTextVar(x.boat)}">${x.boat}</text>
+      <text x="${cx}" y="105" text-anchor="middle" font-family="'JetBrains Mono',monospace" font-size="11" fill="var(--text-muted)">${x.st.toFixed(2)}</text>
+    </g>`;
+  }).join('');
+
+  return `
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">予想スリット体形(平均STベース)</h2></div>
+    <p style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;">左に行くほど平均的にスタートが早い艇です。実際のスタート隊形とは異なる場合があります(過去の平均値による参考図)。</p>
+    <div class="card" style="background:var(--bg-card-2);margin-top:0;overflow-x:auto;">
+      <svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:480px;height:auto;">
+        <line x1="${padL}" y1="70" x2="${W-padR}" y2="70" stroke="rgba(255,255,255,.12)" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="${padL}" y="20" font-family="'JetBrains Mono',monospace" font-size="11" fill="var(--text-muted)">← 早い</text>
+        <text x="${W-padR}" y="20" text-anchor="end" font-family="'JetBrains Mono',monospace" font-size="11" fill="var(--text-muted)">遅い →</text>
+        ${circles}
+      </svg>
+    </div>`;
+}
+
+// 🆕 おすすめ軸+2,3着確率(会場の統計、自動解析.pyの予想モデルとは別物)
+function axisRecommendationHtml(r){
+  const reco = r.axisRecommendation;
+  if(!reco) return '';
+  const courses = Object.keys(reco).sort((a,b)=>reco[b].winRate - reco[a].winRate);
+  if(courses.length === 0) return '';
+  const bestCourse = courses[0];
+  const best = reco[bestCourse];
+  const rows = Object.entries(best.secondThird)
+    .sort((a,b)=> (b[1].second_rate + b[1].third_rate) - (a[1].second_rate + a[1].third_rate))
+    .map(([course, d])=>`
+      <tr>
+        <td><div class="entry-boat" style="background:${boatColorVar(course)};color:${boatTextVar(course)}">${course}</div></td>
+        <td class="entry-num">${d.second_rate.toFixed(1)}%</td>
+        <td class="entry-num">${d.third_rate.toFixed(1)}%</td>
+      </tr>`).join('');
+
+  return `
+    <div class="section-head" style="margin-top:24px;"><h2 style="font-size:16px;">会場統計から見るおすすめ軸</h2></div>
+    <p style="font-size:12px;color:var(--text-muted);margin:-8px 0 12px;">この会場の過去実績のみに基づく統計です。当日の選手・モーター・天候等は考慮していない参考情報です。</p>
+    <div class="card" style="background:var(--bg-card-2);margin-top:0;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="entry-boat" style="width:36px;height:36px;font-size:16px;background:${boatColorVar(bestCourse)};color:${boatTextVar(bestCourse)}">${bestCourse}</div>
+          <div>
+            <div style="font-size:12px;color:var(--text-muted);">この会場で最も1着率が高いコース</div>
+            <div class="axis-prob" style="color:var(--accent);">${best.winRate.toFixed(1)}%</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted);">サンプル数 n=${best.winSamples}</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px;">${bestCourse}コースが1着だった時、他コースが2・3着に来た割合</div>
+      <table class="entry-table">
+        <thead><tr><th></th><th style="text-align:right;">2着率</th><th style="text-align:right;">3着率</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
 function renderRaceDetail(){
   const card = document.getElementById('raceDetailCard');
   const races = TODAY_RACES[currentRaceDate] || [];
@@ -697,6 +784,8 @@ function renderRaceDetail(){
       <thead><tr><th></th><th>選手</th><th style="text-align:right;">進入</th><th style="text-align:right;">展示</th><th style="text-align:right;">全国勝率</th><th style="text-align:right;">モーター2連率</th></tr></thead>
       <tbody>${entryRows}</tbody>
     </table>
+    ${slitFormationHtml(r)}
+    ${axisRecommendationHtml(r)}
     ${tideCrossRef}
   `;
 }
